@@ -1,6 +1,13 @@
 const inputText = document.getElementById('inputText');
 const markdownContainer = document.getElementsByClassName('markdownContainer')[0];
 
+window.onload = () => {
+    const text = localStorage.getItem('markdownText');
+    const html = localStorage.getItem('markdownHtml');
+
+    if (text) inputText.innerHTML = text;
+    if (html) markdownContainer.innerHTML = html;
+};
 
 inputText.addEventListener('input', event => {
     let code = '';
@@ -9,9 +16,10 @@ inputText.addEventListener('input', event => {
     const openedTags = [];
     const headingType = null;
 
-    const val = [...event.target.value];
+    const text = event.target.value;
+    const textArray = [...text];
 
-    val.forEach(char => {
+    textArray.forEach(char => {
         switch(char) {
             case '#': {
                 code += '#';
@@ -54,4 +62,6 @@ inputText.addEventListener('input', event => {
     });
 
     markdownContainer.innerHTML = html;
+    localStorage.setItem('markdownText', text);
+    localStorage.setItem('markdownHtml', html);
 });
