@@ -12,53 +12,87 @@ window.onload = () => {
 inputText.addEventListener('input', event => {
     let code = '';
     let html = ''
+    let prevChar = '';
 
-    const openedTags = [];
+    const activeTags = [];
     const headingType = null;
 
     const text = event.target.value;
     const textArray = [...text];
 
+    const specialCharRegex = /[#*]/;
+
     textArray.forEach(char => {
         switch(char) {
             case '#': {
                 code += '#';
+                break;
+            }
+            case '*': {
+                const currentActiveTag = activeTags[activeTags.length - 1]; 
+                if (
+                    !specialCharRegex.test(prevChar)
+                    && (
+                        currentActiveTag === '</em>'
+                        || currentActiveTag === '</strong>'
+                        || currentActiveTag === '</em></strong>'
+                    )
+                ) {
+                    const tag = activeTags.pop();
+                    html += tag;
+                }
 
+                code += '*';
                 break;
             }
             case ' ': {
                 if (code === '#') {
-                    openedTags.push('h1');
+                    activeTags.push('</h1>');
                     html += '<h1>'
                 } else if (code === '##') {
-                    openedTags.push('h2');
+                    activeTags.push('</h2>');
                     html += '<h2>'
                 } else if (code === '###') {
-                    openedTags.push('h3');
+                    activeTags.push('</h3>');
                     html += '<h3>'
-                }
+                } 
+
                 code = '';
                 html += ' ';
-
                 break;
             }
             case '\n': {
-                const tag = openedTags.pop();
-                if (tag === 'h1') html += '</h1>';
-                if (tag === 'h2') html += '</h2>';
-                if (tag === 'h3') html += '</h3>';
+                if (activeTags.length) {
+                    for (let index = 0; index < activeTags.length; index++) {
+                        const tag = activeTags.pop();
+                        html += tag;
+                    }
+                }
 
                 html += '</br>';
-
                 break;
             }
 
 
             default: {
+                if (code === '*') {
+                    activeTags.push('</em>');
+                    html += '<em>'
+                } else if (code === '**') {
+                    activeTags.push('</strong>');
+                    html += '<strong>'
+                } else if (code === '***') {
+                    activeTags.push('</em></strong>');
+                    html += '<strong><em>'
+                }
+                code = '';
+
                 html += char;
                 break;
             }
         }
+
+        prevChar = char; 
     });
 
     markdownContainer.innerHTML = html;
